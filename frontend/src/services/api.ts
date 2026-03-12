@@ -1,8 +1,32 @@
 import { io, Socket } from 'socket.io-client';
 
 // API Configuration
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
-const SOCKET_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+const getApiBaseUrl = () => {
+  if (process.env.REACT_APP_API_URL) {
+    return process.env.REACT_APP_API_URL;
+  }
+  // In production, use relative URL or your production API
+  if (process.env.NODE_ENV === 'production') {
+    return 'https://api.novasmshubs.com/api'; // Update with your actual API URL
+  }
+  return 'http://localhost:5000/api';
+};
+
+const getSocketUrl = () => {
+  if (process.env.REACT_APP_SOCKET_URL) {
+    return process.env.REACT_APP_SOCKET_URL;
+  }
+  if (process.env.REACT_APP_API_URL) {
+    return process.env.REACT_APP_API_URL.replace('/api', '');
+  }
+  if (process.env.NODE_ENV === 'production') {
+    return 'https://api.novasmshubs.com'; // Update with your actual API URL
+  }
+  return 'http://localhost:5000';
+};
+
+const API_BASE_URL = getApiBaseUrl();
+const SOCKET_URL = getSocketUrl();
 
 // Socket.io instance
 let socket: Socket | null = null;

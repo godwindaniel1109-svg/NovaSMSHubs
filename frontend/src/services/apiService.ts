@@ -66,8 +66,15 @@ class ApiService {
   private token: string | null = null;
 
   constructor() {
-    // Use environment variable or fallback to localhost
-    this.baseURL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+    // Use environment variable or fallback based on environment
+    if (process.env.REACT_APP_API_URL) {
+      this.baseURL = process.env.REACT_APP_API_URL;
+    } else if (process.env.NODE_ENV === 'production') {
+      // In production, use your actual API URL
+      this.baseURL = 'https://api.novasmshubs.com/api'; // Update with your actual API URL
+    } else {
+      this.baseURL = 'http://localhost:5000/api';
+    }
     this.token = localStorage.getItem('auth_token');
   }
 

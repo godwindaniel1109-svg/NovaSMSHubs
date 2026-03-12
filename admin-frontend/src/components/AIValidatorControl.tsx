@@ -167,6 +167,7 @@ interface ValidationStats {
 }
 
 const AIValidatorControl: React.FC = () => {
+  const [selectedValidator, setSelectedValidator] = useState<AIValidator | null>(null);
   const [aiSystemStatus, setAISystemStatus] = useState<AISystemStatus>({
     cpu: 45,
     memory: 62,
@@ -1125,9 +1126,6 @@ const AIValidatorControl: React.FC = () => {
             </div>
           </div>
         </div>
-                </div>
-              </div>
-            </div>
 
             <div className="flex justify-end mt-6">
               <button className="px-6 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors">

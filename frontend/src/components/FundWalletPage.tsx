@@ -92,8 +92,12 @@ const FundWalletPage: React.FC = () => {
       formData.append('comment', proofData.comment);
       formData.append('userId', proofData.userId || 'current-user');
 
-      const response = await fetch('/api/payment-proofs', {
+      const apiUrl = process.env.REACT_APP_API_URL || (process.env.NODE_ENV === 'production' ? 'https://api.novasmshubs.com/api' : 'http://localhost:5000/api');
+      const response = await fetch(`${apiUrl}/payment-proofs`, {
         method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+        },
         body: formData
       });
 
@@ -116,10 +120,12 @@ const FundWalletPage: React.FC = () => {
   const verifyPayment = async (reference: string) => {
     try {
       // Verify payment with your backend
-      const response = await fetch('/api/verify-payment', {
+      const apiUrl = process.env.REACT_APP_API_URL || (process.env.NODE_ENV === 'production' ? 'https://api.novasmshubs.com/api' : 'http://localhost:5000/api');
+      const response = await fetch(`${apiUrl}/verify-payment`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
         },
         body: JSON.stringify({ reference }),
       });

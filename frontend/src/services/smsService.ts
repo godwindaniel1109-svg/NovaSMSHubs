@@ -1,4 +1,16 @@
 // SMS Service with Multiple Providers and Fallback
+const getApiBaseUrl = () => {
+  if (process.env.REACT_APP_API_URL) {
+    return process.env.REACT_APP_API_URL;
+  }
+  if (process.env.NODE_ENV === 'production') {
+    return 'https://api.novasmshubs.com/api'; // Update with your actual API URL
+  }
+  return 'http://localhost:5000/api';
+};
+
+const API_BASE_URL = getApiBaseUrl();
+
 interface SMSProvider {
   name: string;
   baseUrl: string;
@@ -253,7 +265,7 @@ class SMSService {
   // Check if number is banned
   private async checkNumberBanned(phoneNumber: string): Promise<boolean> {
     try {
-      const response = await fetch(`/api/numbers/check-banned/${phoneNumber}`, {
+      const response = await fetch(`${API_BASE_URL}/numbers/check-banned/${phoneNumber}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -271,7 +283,7 @@ class SMSService {
   // Request code/OTP for a number
   async requestCode(request: CodeRequest): Promise<CodeResponse> {
     try {
-      const response = await fetch('/api/numbers/request-code', {
+      const response = await fetch(`${API_BASE_URL}/numbers/request-code`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -307,7 +319,7 @@ class SMSService {
   // Replace banned number
   async replaceBannedNumber(numberId: string, userId: string): Promise<NumberResponse> {
     try {
-      const response = await fetch('/api/numbers/replace-banned', {
+      const response = await fetch(`${API_BASE_URL}/numbers/replace-banned`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -350,7 +362,7 @@ class SMSService {
   // Get available services
   async getServices(country: string): Promise<any[]> {
     try {
-      const response = await fetch(`/api/services?country=${country}`, {
+      const response = await fetch(`${API_BASE_URL}/services?country=${country}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -367,7 +379,7 @@ class SMSService {
   // Get available countries
   async getCountries(): Promise<any[]> {
     try {
-      const response = await fetch('/api/countries', {
+      const response = await fetch(`${API_BASE_URL}/countries`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }

@@ -39,7 +39,8 @@ const AnnouncementBar: React.FC<AnnouncementBarProps> = ({ onAnnouncementRead })
   const loadAnnouncements = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch('/api/announcements/active');
+      const apiUrl = process.env.REACT_APP_API_URL || (process.env.NODE_ENV === 'production' ? 'https://api.novasmshubs.com/api' : 'http://localhost:5000/api');
+      const response = await fetch(`${apiUrl}/announcements/active`);
       if (response.ok) {
         const data = await response.json();
         setAnnouncements(data.announcements || []);
