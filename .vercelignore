@@ -1,0 +1,8 @@
+node_modules
+backend
+admin-backend
+admin-frontend
+*.md
+!README.md
+.git
+.env*
