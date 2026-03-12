@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Mail, Lock, User, Phone, ArrowRight } from 'lucide-react';
+import { useAuth } from '../hooks/useApi';
+import GoogleAuth from './GoogleAuth';
 
 const RegisterPage: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -13,14 +15,47 @@ const RegisterPage: React.FC = () => {
     password_confirmation: ''
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const navigate = useNavigate();
+  const { register } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    // Add registration logic here
-    setTimeout(() => {
+    setError('');
+    
+    try {
+      // Basic validation
+      if (!formData.name || !formData.email || !formData.password) {
+        setError('Please fill in all required fields');
+        setIsLoading(false);
+        return;
+      }
+      
+      if (formData.password !== formData.password_confirmation) {
+        setError('Passwords do not match');
+        setIsLoading(false);
+        return;
+      }
+      
+      if (formData.password.length < 6) {
+        setError('Password must be at least 6 characters');
+        setIsLoading(false);
+        return;
+      }
+      
+      // Use our registration service
+      const result = await register(formData);
+      
+      if (result.success) {
+        navigate('/dashboard');
+      } else {
+        setError(result.error || 'Registration failed');
+      }
+    } catch (err) {
+      setError('An unexpected error occurred. Please try again.');
+    } finally {
       setIsLoading(false);
-    }, 2000);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {

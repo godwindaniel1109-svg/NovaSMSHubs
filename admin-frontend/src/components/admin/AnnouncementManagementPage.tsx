@@ -155,7 +155,7 @@ const AnnouncementManagementPage: React.FC = () => {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this announcement?')) return;
+    if (!window.confirm('Are you sure you want to delete this announcement?')) return;
 
     try {
       setIsLoading(true);

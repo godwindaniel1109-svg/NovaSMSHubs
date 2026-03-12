@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { CreditCard, Smartphone, AlertCircle, CheckCircle, X } from 'lucide-react';
-import apiService from '../services/api';
+import { useWallet } from '../hooks/useApi';
 import PaymentProofUpload from './PaymentProofUpload';
 
 interface PaymentMethod {
@@ -18,6 +18,7 @@ const FundWalletPage: React.FC = () => {
   const [success, setSuccess] = useState<string>('');
   const [paystackScriptLoaded, setPaystackScriptLoaded] = useState(false);
   const [showProofUpload, setShowProofUpload] = useState(false);
+  const { fundWallet: fundWalletApi, balance } = useWallet();
 
   // Load Paystack script
   useEffect(() => {
@@ -54,19 +55,19 @@ const FundWalletPage: React.FC = () => {
   ];
 
   // Real API function for funding wallet
-  const fundWallet = async (amount: number, gateway: string) => {
+  const handleFundWallet = async (amount: number, gateway: string) => {
     try {
-      const response = await apiService.fundWallet(amount, gateway);
+      const response = await fundWalletApi(amount, gateway);
       
       if (response.error) {
         setError(response.error);
       } else {
-        setSuccess(`Funding request submitted successfully! Reference: ${response.reference}`);
+        setSuccess(`Funding request submitted successfully! Reference: ${response.data?.reference || 'N/A'}`);
         // Refresh wallet balance
-        const walletResponse = await apiService.getWalletBalance();
-        if (walletResponse.balance !== undefined) {
+        const walletResponse = await fundWalletApi(0, 'refresh');
+        if (walletResponse.success) {
           // Update wallet balance in UI
-          console.log('New balance:', walletResponse.balance);
+          console.log('New balance:', balance);
         }
       }
     } catch (error) {
@@ -77,29 +78,36 @@ const FundWalletPage: React.FC = () => {
 
   // Submit payment proof with API
   const submitPaymentProof = async (proofData: any) => {
-    setIsLoading(true);
-    setError('');
-    
     try {
+      setIsLoading(true);
+      setError('');
+      
+      // Upload file and submit proof data
       const formData = new FormData();
+      formData.append('file', proofData.proofFile);
+      formData.append('orderId', proofData.orderId);
       formData.append('amount', proofData.amount.toString());
       formData.append('gateway', proofData.gateway);
+      formData.append('transactionId', proofData.transactionId);
       formData.append('comment', proofData.comment);
-      formData.append('proofFile', proofData.proofFile);
+      formData.append('userId', proofData.userId || 'current-user');
 
-      const response = await apiService.submitPaymentProof(formData);
-      
-      if (response.error) {
-        setError(response.error);
-      } else {
-        setSuccess(`Payment proof submitted successfully! Your payment will be reviewed and approved.`);
+      const response = await fetch('/api/payment-proofs', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (response.ok) {
+        setSuccess('Payment proof submitted successfully! It will be reviewed within 24 hours.');
         setShowProofUpload(false);
         setAmount('');
         setSelectedMethod('');
+        setComment('');
+      } else {
+        setError('Failed to submit payment proof. Please try again.');
       }
     } catch (error) {
-      console.error('Failed to submit payment proof:', error);
-      setError('Failed to submit payment proof. Please try again.');
+      setError('Network error. Please check your connection and try again.');
     } finally {
       setIsLoading(false);
     }
@@ -160,7 +168,7 @@ const FundWalletPage: React.FC = () => {
           ref: `NOVA_${Date.now()}_${Math.floor(Math.random() * 1000000)}`,
           callback: (response: any) => {
             // Payment successful - call API to record transaction
-            fundWallet(parseFloat(amount), 'paystack');
+            handleFundWallet(parseFloat(amount), 'paystack');
             setIsLoading(false);
           },
           onClose: () => {

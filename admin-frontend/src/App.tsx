@@ -2,14 +2,25 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import AdminLoginPage from './components/AdminLoginPage';
 import AdminDashboardLayout from './components/AdminDashboardLayout';
-import AdminDashboardPage from './components/AdminDashboardPage';
+import SummaryDashboardPage from './components/SummaryDashboardPage';
+import AdminDashboardPage from './components/admin/AdminDashboardPage';
+import EnhancedAdminDashboard from './components/EnhancedAdminDashboard';
+import AdminDashboard from './components/AIPoweredAdminDashboard';
 import UserManagementPage from './components/UserManagementPage';
+import OrdersManagementPage from './components/OrdersManagementPage';
+import ServicesManagementPage from './components/ServicesManagementPage';
 import TransactionManagementPage from './components/TransactionManagementPage';
+import AdminChatPage from './components/AdminChatPage';
+import AdminAnalyticsPage from './components/AdminAnalyticsPage';
+import AdminPowerControl from './components/AdminPowerControl';
+import AIValidatorControl from './components/AIValidatorControl';
+import AINotificationSystem from './components/AINotificationSystem';
 import NotificationPage from './components/NotificationPage';
 import AnnouncementManagementPage from './components/admin/AnnouncementManagementPage';
-import AdminProfilePage from './components/AdminProfilePage';
+import AdminSettingsPage from './components/AdminSettingsPage';
 import AdminProtectedRoute from './components/AdminProtectedRoute';
 import './App.css';
+import './styles/animations.css';
 
 function App() {
   return (
@@ -18,18 +29,19 @@ function App() {
         <Routes>
           <Route path="/" element={<AdminLoginPage />} />
           <Route path="/login" element={<AdminLoginPage />} />
+          <Route path="/admin/login" element={<AdminLoginPage />} />
           <Route 
-            path="/dashboard" 
+            path="/admin/dashboard" 
             element={
               <AdminProtectedRoute>
                 <AdminDashboardLayout>
-                  <AdminDashboardPage />
+                  <AdminDashboard />
                 </AdminDashboardLayout>
               </AdminProtectedRoute>
             } 
           />
           <Route 
-            path="/users" 
+            path="/admin/users" 
             element={
               <AdminProtectedRoute>
                 <AdminDashboardLayout>
@@ -39,7 +51,27 @@ function App() {
             } 
           />
           <Route 
-            path="/transactions" 
+            path="/admin/orders" 
+            element={
+              <AdminProtectedRoute>
+                <AdminDashboardLayout>
+                  <OrdersManagementPage />
+                </AdminDashboardLayout>
+              </AdminProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/services" 
+            element={
+              <AdminProtectedRoute>
+                <AdminDashboardLayout>
+                  <ServicesManagementPage />
+                </AdminDashboardLayout>
+              </AdminProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/transactions" 
             element={
               <AdminProtectedRoute>
                 <AdminDashboardLayout>
@@ -49,7 +81,57 @@ function App() {
             } 
           />
           <Route 
-            path="/notifications" 
+            path="/admin/analytics" 
+            element={
+              <AdminProtectedRoute>
+                <AdminDashboardLayout>
+                  <AdminAnalyticsPage />
+                </AdminDashboardLayout>
+              </AdminProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/chat" 
+            element={
+              <AdminProtectedRoute>
+                <AdminDashboardLayout>
+                  <AdminChatPage />
+                </AdminDashboardLayout>
+              </AdminProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/power-control" 
+            element={
+              <AdminProtectedRoute>
+                <AdminDashboardLayout>
+                  <AdminPowerControl />
+                </AdminDashboardLayout>
+              </AdminProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/ai-validator" 
+            element={
+              <AdminProtectedRoute>
+                <AdminDashboardLayout>
+                  <AIValidatorControl />
+                </AdminDashboardLayout>
+              </AdminProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/ai-notifications" 
+            element={
+              <AdminProtectedRoute>
+                <AdminDashboardLayout>
+                  <AINotificationSystem />
+                </AdminDashboardLayout>
+              </AdminProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/notifications" 
             element={
               <AdminProtectedRoute>
                 <AdminDashboardLayout>
@@ -59,7 +141,7 @@ function App() {
             } 
           />
           <Route 
-            path="/announcements" 
+            path="/admin/announcements" 
             element={
               <AdminProtectedRoute>
                 <AdminDashboardLayout>
@@ -69,7 +151,7 @@ function App() {
             } 
           />
           <Route 
-            path="/statistics" 
+            path="/admin/statistics" 
             element={
               <AdminProtectedRoute>
                 <AdminDashboardLayout>
@@ -79,21 +161,21 @@ function App() {
             } 
           />
           <Route 
-            path="/profile" 
+            path="/admin/profile" 
             element={
               <AdminProtectedRoute>
                 <AdminDashboardLayout>
-                  <AdminProfilePage />
+                  <AdminSettingsPage />
                 </AdminDashboardLayout>
               </AdminProtectedRoute>
             } 
           />
           <Route 
-            path="/settings" 
+            path="/admin/settings" 
             element={
               <AdminProtectedRoute>
                 <AdminDashboardLayout>
-                  <AdminDashboardPage />
+                  <AdminSettingsPage />
                 </AdminDashboardLayout>
               </AdminProtectedRoute>
             } 

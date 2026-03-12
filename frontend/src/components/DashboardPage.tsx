@@ -1,10 +1,18 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Globe, CheckCircle } from 'lucide-react';
+import { ArrowRight, Globe, CheckCircle, Sparkles, TrendingUp, Users, DollarSign, Shield, Clock, BarChart3 } from 'lucide-react';
 
 const DashboardPage: React.FC = () => {
   const [selectedCountry, setSelectedCountry] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  // Mock user stats
+  const userStats = {
+    totalNumbers: 5,
+    totalSpent: 12500,
+    walletBalance: 8500,
+    pendingOrders: 2
+  };
 
   const countries = [
     { code: 'US', name: 'United States', mobileCode: '1' },
@@ -267,76 +275,125 @@ const DashboardPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-4">
-      {/* Welcome Section */}
-      <div className="bg-white rounded-lg p-6 shadow-sm">
-        <h1 className="font-bold text-2xl md:text-3xl text-gray-900 pb-5 pt-3">
-          Welcome, Handsome Dwin 👋
-        </h1>
-        <p className="text-gray-600">
-          At NovaSMSHub, verify more for less with NovaSMSHub.
-        </p>
+    <div className="space-y-8 animate-fade-in">
+      {/* Welcome Section with Gradient */}
+      <div className="bg-gradient-to-r from-nova-primary/10 to-nova-secondary/10 rounded-2xl p-8 shadow-lg border border-nova-primary/20">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="font-bold text-3xl md:text-4xl text-gray-900 mb-3">
+              Welcome back! 👋
+            </h1>
+            <p className="text-gray-700 text-lg">
+              Ready to verify more for less with NovaSMSHub?
+            </p>
+          </div>
+          <div className="hidden md:block">
+            <div className="w-16 h-16 bg-gradient-to-r from-nova-primary to-nova-secondary rounded-2xl flex items-center justify-center animate-pulse">
+              <Sparkles className="w-8 h-8 text-black" />
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-white rounded-lg p-6 shadow-sm">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">Total Orders</p>
-              <p className="text-2xl font-bold text-gray-900">23</p>
+      {/* Enhanced Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-gray-100">
+          <div className="flex items-center justify-between mb-4">
+            <div className="w-14 h-14 bg-nova-primary/10 rounded-xl flex items-center justify-center">
+              <Globe className="w-7 h-7 text-nova-primary" />
             </div>
-            <div className="w-12 h-12 bg-nova-primary/20 rounded-full flex items-center justify-center">
-              <Globe className="w-6 h-6 text-nova-primary" />
+            <div className="flex items-center text-green-600 text-sm font-medium">
+              <TrendingUp className="w-4 h-4 mr-1" />
+              <span>+12%</span>
             </div>
+          </div>
+          <div>
+            <p className="text-sm text-gray-600 mb-1">Total Numbers</p>
+            <p className="text-3xl font-bold text-gray-900">{userStats.totalNumbers}</p>
+            <p className="text-xs text-gray-500 mt-2">Active virtual numbers</p>
           </div>
         </div>
         
-        <div className="bg-white rounded-lg p-6 shadow-sm">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">Pending Transactions</p>
-              <p className="text-2xl font-bold text-gray-900">10</p>
+        <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-gray-100">
+          <div className="flex items-center justify-between mb-4">
+            <div className="w-14 h-14 bg-green-100 rounded-xl flex items-center justify-center">
+              <DollarSign className="w-7 h-7 text-green-600" />
             </div>
-            <div className="w-12 h-12 bg-nova-secondary/20 rounded-full flex items-center justify-center">
-              <CheckCircle className="w-6 h-6 text-nova-secondary" />
+            <div className="flex items-center text-green-600 text-sm font-medium">
+              <TrendingUp className="w-4 h-4 mr-1" />
+              <span>+8%</span>
             </div>
+          </div>
+          <div>
+            <p className="text-sm text-gray-600 mb-1">Wallet Balance</p>
+            <p className="text-3xl font-bold text-gray-900">₦{userStats.walletBalance.toLocaleString()}</p>
+            <p className="text-xs text-gray-500 mt-2">Available for purchases</p>
           </div>
         </div>
         
-        <div className="bg-white rounded-lg p-6 shadow-sm">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">Wallet Balance</p>
-              <p className="text-2xl font-bold text-gray-900">₦140</p>
+        <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-gray-100">
+          <div className="flex items-center justify-between mb-4">
+            <div className="w-14 h-14 bg-purple-100 rounded-xl flex items-center justify-center">
+              <BarChart3 className="w-7 h-7 text-purple-600" />
             </div>
-            <div className="w-12 h-12 bg-nova-navy/20 rounded-full flex items-center justify-center">
-              <span className="text-nova-navy font-bold text-sm">₦</span>
+            <div className="flex items-center text-blue-600 text-sm font-medium">
+              <Clock className="w-4 h-4 mr-1" />
+              <span>2</span>
             </div>
+          </div>
+          <div>
+            <p className="text-sm text-gray-600 mb-1">Pending Orders</p>
+            <p className="text-3xl font-bold text-gray-900">{userStats.pendingOrders}</p>
+            <p className="text-xs text-gray-500 mt-2">Processing orders</p>
+          </div>
+        </div>
+        
+        <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-gray-100">
+          <div className="flex items-center justify-between mb-4">
+            <div className="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center">
+              <Shield className="w-7 h-7 text-blue-600" />
+            </div>
+            <div className="flex items-center text-green-600 text-sm font-medium">
+              <CheckCircle className="w-4 h-4 mr-1" />
+              <span>Verified</span>
+            </div>
+          </div>
+          <div>
+            <p className="text-sm text-gray-600 mb-1">Total Spent</p>
+            <p className="text-3xl font-bold text-gray-900">₦{userStats.totalSpent.toLocaleString()}</p>
+            <p className="text-xs text-gray-500 mt-2">Lifetime purchases</p>
           </div>
         </div>
       </div>
 
       {/* Get New Number Section */}
-      <div className="bg-white rounded-lg p-6 shadow-sm">
-        <h2 className="font-bold text-xl md:text-2xl text-gray-900 mb-6">
-          Get a New Number
-        </h2>
+      <div className="bg-white rounded-xl shadow-lg p-8 border border-gray-100">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="font-bold text-2xl text-gray-900 mb-2">
+              Get a New Number
+            </h2>
+            <p className="text-gray-600">Choose from 500+ countries worldwide</p>
+          </div>
+          <div className="w-12 h-12 bg-nova-primary/10 rounded-xl flex items-center justify-center">
+            <Globe className="w-6 h-6 text-nova-primary" />
+          </div>
+        </div>
         
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label htmlFor="country" className="block mb-2 text-sm font-medium text-gray-900">
+            <label htmlFor="country" className="block mb-2 text-sm font-semibold text-gray-900">
               Select Country
             </label>
             <select
               id="country"
               value={selectedCountry}
               onChange={(e) => setSelectedCountry(e.target.value)}
-              className="block w-full p-3 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-nova-primary focus:border-nova-primary"
+              className="block w-full p-4 text-sm text-gray-900 border border-gray-300 rounded-xl bg-gray-50 focus:ring-2 focus:ring-nova-primary focus:border-nova-primary transition-all"
               required
             >
               <option value="">Choose a country</option>
-              {countries.map((country) => (
+              {countries.map((country: any) => (
                 <option key={country.code} value={country.code}>
                   {country.name} (+{country.mobileCode})
                 </option>
@@ -347,17 +404,17 @@ const DashboardPage: React.FC = () => {
           <button
             type="submit"
             disabled={isLoading}
-            className="text-white bg-nova-navy hover:bg-nova-secondary font-medium rounded-md text-sm px-8 py-3 text-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+            className="w-full bg-gradient-to-r from-nova-primary to-nova-secondary text-black font-semibold rounded-xl px-8 py-4 text-center transition-all duration-300 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
           >
             {isLoading ? (
               <>
-                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                <div className="w-5 h-5 border-2 border-black/30 border-t-black rounded-full animate-spin"></div>
                 <span>Processing...</span>
               </>
             ) : (
               <>
-                <span>Continue</span>
-                <ArrowRight className="w-4 h-4" />
+                <span>Continue to Buy Number</span>
+                <ArrowRight className="w-5 h-5" />
               </>
             )}
           </button>
@@ -365,21 +422,35 @@ const DashboardPage: React.FC = () => {
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Link 
           to="/buy-number"
-          className="bg-gradient-to-r from-nova-primary to-nova-secondary text-black rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow"
+          className="group bg-gradient-to-r from-nova-primary to-nova-secondary text-black rounded-xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-gray-100"
         >
-          <h3 className="font-bold text-lg mb-2">Buy International Number</h3>
-          <p className="text-sm opacity-80">Get numbers from 500+ countries worldwide</p>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-bold text-xl">Buy International Number</h3>
+            <Globe className="w-8 h-8 text-black/70" />
+          </div>
+          <p className="text-sm opacity-80 mb-4">Get numbers from 500+ countries worldwide</p>
+          <div className="flex items-center text-black font-medium">
+            <span>Explore</span>
+            <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+          </div>
         </Link>
         
         <Link 
           to="/buy-usa-number"
-          className="bg-gradient-to-r from-nova-secondary to-nova-navy text-white rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow"
+          className="group bg-gradient-to-r from-nova-secondary to-nova-accent text-black rounded-xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-gray-100"
         >
-          <h3 className="font-bold text-lg mb-2">Buy USA Number</h3>
-          <p className="text-sm opacity-80">Specialized USA numbers with fast delivery</p>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-bold text-xl">Buy USA Number</h3>
+            <Shield className="w-8 h-8 text-black/70" />
+          </div>
+          <p className="text-sm opacity-80 mb-4">Specialized USA numbers with fast delivery</p>
+          <div className="flex items-center text-black font-medium">
+            <span>Get Started</span>
+            <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+          </div>
         </Link>
       </div>
     </div>

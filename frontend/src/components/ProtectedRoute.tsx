@@ -1,59 +1,32 @@
 import React, { useEffect, useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { Loader } from 'lucide-react';
+import { useAuth } from '../hooks/useApi';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
   requireAuth?: boolean;
   redirectTo?: string;
+  isAdmin?: boolean;
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ 
   children, 
   requireAuth = true,
-  redirectTo = '/login'
+  redirectTo = '/login',
+  isAdmin = false
 }) => {
-  const [isLoading, setIsLoading] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const { user, loading: authLoading, error } = useAuth();
   const location = useLocation();
 
-  useEffect(() => {
-    const checkAuthentication = () => {
-      const token = localStorage.getItem('token');
-      const user = localStorage.getItem('user');
-      
-      if (requireAuth) {
-        if (!token || !user) {
-          setIsAuthenticated(false);
-        } else {
-          // Validate token format (basic check)
-          try {
-            const parsedUser = JSON.parse(user);
-            if (parsedUser && parsedUser.id && parsedUser.email) {
-              setIsAuthenticated(true);
-            } else {
-              setIsAuthenticated(false);
-              // Clear invalid data
-              localStorage.removeItem('token');
-              localStorage.removeItem('user');
-            }
-          } catch (error) {
-            setIsAuthenticated(false);
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-          }
-        }
-      } else {
-        setIsAuthenticated(true);
-      }
-      
-      setIsLoading(false);
-    };
+  // Check for admin authentication
+  const checkAdminAuth = () => {
+    const adminToken = localStorage.getItem('adminToken');
+    const adminData = localStorage.getItem('adminData');
+    return adminToken && adminData;
+  };
 
-    checkAuthentication();
-  }, [requireAuth]);
-
-  if (isLoading) {
+  if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-100">
         <div className="text-center">
@@ -64,10 +37,19 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     );
   }
 
-  if (requireAuth && !isAuthenticated) {
-    // Redirect to login with return URL
-    const returnUrl = encodeURIComponent(location.pathname + location.search);
-    return <Navigate to={`${redirectTo}?returnUrl=${returnUrl}`} replace />;
+  if (requireAuth) {
+    if (isAdmin) {
+      // Check admin authentication
+      if (!checkAdminAuth()) {
+        return <Navigate to="/admin/login" replace />;
+      }
+    } else {
+      // Check user authentication
+      if (!user) {
+        const returnUrl = encodeURIComponent(location.pathname + location.search);
+        return <Navigate to={`${redirectTo}?returnUrl=${returnUrl}`} replace />;
+      }
+    }
   }
 
   return <>{children}</>;

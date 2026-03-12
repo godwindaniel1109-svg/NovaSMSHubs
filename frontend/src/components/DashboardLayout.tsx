@@ -13,37 +13,35 @@ import {
   X,
   User,
   BarChart3,
-  Flag,
-  ShoppingBag
+  Shield,
+  ShoppingBag,
+  MessageSquare
 } from 'lucide-react';
 import Logo from './Logo';
 import AnnouncementBar from './AnnouncementBar';
+import { useAuth, useWallet } from '../hooks/useApi';
+import DarkModeToggle from './DarkModeToggle';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
-  userName: string;
-  walletBalance: string;
-  profileImage?: string;
 }
 
 const DashboardLayout: React.FC<DashboardLayoutProps> = ({ 
-  children, 
-  userName = "Handsome Dwin", 
-  walletBalance = "₦140",
-  profileImage = "/images/default-avatar.png" 
+  children
 }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
+  const { balance } = useWallet();
 
   const handleLogout = () => {
-    // Clear any stored user data/tokens
-    localStorage.removeItem('userToken');
-    localStorage.removeItem('userData');
-    sessionStorage.clear();
-    
-    // Navigate to login page
+    logout();
     navigate('/login');
+  };
+
+  const formatBalance = (balance: number) => {
+    return `₦${balance.toLocaleString()}`;
   };
 
   const menuItems = [
@@ -63,8 +61,15 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     },
     {
       name: 'Buy USA Number',
-      icon: Flag,
+      icon: Shield,
       route: '/buy-usa-number',
+      badge: null,
+      mobileOnly: false
+    },
+    {
+      name: 'All Country V2',
+      icon: Globe,
+      route: '/buy-global-number-v2',
       badge: null,
       mobileOnly: false
     },
@@ -80,6 +85,13 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
       icon: Receipt,
       route: '/transaction-history',
       badge: '10',
+      mobileOnly: false
+    },
+    {
+      name: 'Chat & Support',
+      icon: MessageSquare,
+      route: '/chat',
+      badge: '3',
       mobileOnly: false
     },
     {
@@ -135,11 +147,12 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
               >
                 Fund Your Wallet
               </Link>
+              <DarkModeToggle />
               <Link 
                 to="/fund-wallet"
                 className="text-white bg-nova-navy hover:bg-nova-primary font-medium rounded-md text-sm px-3 md:px-8 py-2 text-center hover:text-white transition-colors"
               >
-                Wallet Balance: {walletBalance}
+                Wallet Balance: {formatBalance(balance)}
               </Link>
             </div>
           </div>
@@ -166,7 +179,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                   onClick={() => setIsSidebarOpen(false)}
                   className="block text-lg font-bold text-nova-navy hover:text-nova-primary transition-colors cursor-pointer"
                 >
-                  {walletBalance}
+                  {formatBalance(balance)}
                 </Link>
               </div>
             </div>

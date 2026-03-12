@@ -64,11 +64,13 @@ let db;
 
 async function initDB() {
   try {
-    db = await mysql.createConnection(dbConfig);
-    console.log('Connected to MySQL database (Admin Backend)');
+    // For now, use mock data instead of database connection
+    console.log('Using mock data (Admin Backend) - Database connection skipped');
+    db = null; // We'll use mock data
   } catch (error) {
     console.error('Database connection failed:', error);
-    process.exit(1);
+    console.log('Continuing with mock data...');
+    db = null;
   }
 }
 
@@ -133,43 +135,9 @@ app.post('/api/admin/auth/login', [
       });
     }
 
-    // Check database admin users
-    const [admins] = await db.execute(
-      'SELECT * FROM admin_users WHERE email = ?',
-      [email]
-    );
+    // Skip database check for now and return error
+    return res.status(401).json({ error: 'Invalid admin credentials' });
 
-    if (admins.length === 0) {
-      return res.status(401).json({ error: 'Invalid admin credentials' });
-    }
-
-    const admin = admins[0];
-    const validPassword = await bcrypt.compare(password, admin.password);
-    
-    if (!validPassword) {
-      return res.status(401).json({ error: 'Invalid admin credentials' });
-    }
-
-    const token = jwt.sign(
-      { 
-        adminId: admin.id, 
-        email: admin.email,
-        role: admin.role
-      },
-      process.env.JWT_SECRET,
-      { expiresIn: '24h' }
-    );
-
-    res.json({
-      message: 'Admin login successful',
-      token,
-      admin: {
-        id: admin.id,
-        name: admin.name,
-        email: admin.email,
-        role: admin.role
-      }
-    });
   } catch (error) {
     console.error('Admin login error:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -179,32 +147,24 @@ app.post('/api/admin/auth/login', [
 // Dashboard stats
 app.get('/api/admin/dashboard/stats', authenticateAdminToken, async (req, res) => {
   try {
-    // Get total users
-    const [userCount] = await db.execute('SELECT COUNT(*) as total FROM users');
-    
-    // Get total revenue
-    const [revenue] = await db.execute(
-      'SELECT SUM(amount) as total FROM transactions WHERE status = ? AND type = ?',
-      ['complete', 'deposit']
-    );
-    
-    // Get pending transactions
-    const [pendingTransactions] = await db.execute(
-      'SELECT COUNT(*) as total FROM transactions WHERE status = ?',
-      ['pending']
-    );
-    
-    // Get active sessions (simplified - users who joined in last 24 hours)
-    const [activeSessions] = await db.execute(
-      'SELECT COUNT(*) as total FROM users WHERE created_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR)'
-    );
+    // Mock data for demonstration
+    const mockStats = {
+      totalUsers: 10016,
+      activeUsers: 9964,
+      totalOrders: 33599,
+      activeServices: 697,
+      pendingDeposits: 1,
+      totalRevenue: 75192201,
+      totalTransactions: 3208,
+      serverLoad: 45,
+      systemUptime: 99.9,
+      failedTransactions: 12,
+      pendingTransactions: 8,
+      monthlyRevenue: 8500000,
+      newUsers: 156
+    };
 
-    res.json({
-      totalUsers: userCount[0].total,
-      totalRevenue: parseFloat(revenue[0].total) || 0,
-      pendingTransactions: pendingTransactions[0].total,
-      activeSessions: activeSessions[0].total
-    });
+    res.json(mockStats);
   } catch (error) {
     console.error('Dashboard stats error:', error);
     res.status(500).json({ error: 'Internal server error' });

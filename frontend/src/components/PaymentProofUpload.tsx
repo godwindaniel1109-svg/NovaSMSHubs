@@ -2,11 +2,14 @@ import React, { useState, useRef } from 'react';
 import { Upload, X, AlertCircle, CheckCircle, Image, FileText, Loader } from 'lucide-react';
 
 interface PaymentProofData {
+  orderId: string;
   amount: number;
   gateway: string;
+  transactionId: string;
   comment: string;
   proofFile: File | null;
   proofPreview: string;
+  userId?: string;
 }
 
 interface PaymentProofUploadProps {
@@ -14,13 +17,15 @@ interface PaymentProofUploadProps {
   gateway: string;
   onSubmit: (proofData: PaymentProofData) => void;
   isLoading?: boolean;
+  orderId?: string;
 }
 
 const PaymentProofUpload: React.FC<PaymentProofUploadProps> = ({
   amount,
   gateway,
   onSubmit,
-  isLoading = false
+  isLoading = false,
+  orderId = ''
 }) => {
   const [comment, setComment] = useState('');
   const [proofFile, setProofFile] = useState<File | null>(null);
@@ -122,11 +127,14 @@ const PaymentProofUpload: React.FC<PaymentProofUploadProps> = ({
     }
 
     onSubmit({
+      orderId: orderId || `ORD-${Date.now()}`, // Use provided orderId or generate new one
       amount,
       gateway,
+      transactionId: `TXN-${Date.now()}`, // Generate transaction ID
       comment: comment.trim(),
       proofFile,
-      proofPreview
+      proofPreview,
+      userId: 'current-user' // This would come from auth context
     });
   };
 

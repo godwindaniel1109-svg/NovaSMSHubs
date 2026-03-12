@@ -1,0 +1,283 @@
+/* Dark mode styles for NovaSMSHubs */
+
+/* Dark mode variables */
+:root {
+  --nova-primary-dark: #f59e0b;
+  --nova-secondary-dark: #d97706;
+  --nova-accent-dark: #92400e;
+}
+
+/* Dark mode base styles */
+.dark {
+  color-scheme: dark;
+}
+
+/* Dark mode background colors */
+.dark .bg-white {
+  background-color: #1f2937 !important;
+}
+
+.dark .bg-gray-50 {
+  background-color: #111827 !important;
+}
+
+.dark .bg-gray-100 {
+  background-color: #1f2937 !important;
+}
+
+.dark .bg-gray-200 {
+  background-color: #374151 !important;
+}
+
+.dark .bg-gray-300 {
+  background-color: #4b5563 !important;
+}
+
+.dark .bg-gray-50\/80 {
+  background-color: rgba(17, 24, 39, 0.8) !important;
+}
+
+.dark .bg-gray-50\/90 {
+  background-color: rgba(17, 24, 39, 0.9) !important;
+}
+
+/* Dark mode text colors */
+.dark .text-white {
+  color: #f9fafb !important;
+}
+
+.dark .text-gray-900 {
+  color: #f9fafb !important;
+}
+
+.dark .text-gray-800 {
+  color: #f3f4f6 !important;
+}
+
+.dark .text-gray-700 {
+  color: #e5e7eb !important;
+}
+
+.dark .text-gray-600 {
+  color: #d1d5db !important;
+}
+
+.dark .text-gray-500 {
+  color: #9ca3af !important;
+}
+
+.dark .text-gray-400 {
+  color: #6b7280 !important;
+}
+
+.dark .text-black {
+  color: #f9fafb !important;
+}
+
+/* Dark mode border colors */
+.dark .border-gray-100 {
+  border-color: #374151 !important;
+}
+
+.dark .border-gray-200 {
+  border-color: #4b5563 !important;
+}
+
+.dark .border-gray-300 {
+  border-color: #6b7280 !important;
+}
+
+/* Dark mode shadow styles */
+.dark .shadow-sm {
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.3) !important;
+}
+
+.dark .shadow {
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px 0 rgba(0, 0, 0, 0.3) !important;
+}
+
+.dark .shadow-md {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.3) !important;
+}
+
+.dark .shadow-lg {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.3) !important;
+}
+
+.dark .shadow-xl {
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Dark mode form styles */
+.dark .bg-gray-50 {
+  background-color: #374151 !important;
+}
+
+.dark input[type="text"],
+.dark input[type="email"],
+.dark input[type="password"],
+.dark input[type="tel"],
+.dark select,
+.dark textarea {
+  background-color: #374151 !important;
+  color: #f9fafb !important;
+  border-color: #4b5563 !important;
+}
+
+.dark input[type="text"]:focus,
+.dark input[type="email"]:focus,
+.dark input[type="password"]:focus,
+.dark input[type="tel"]:focus,
+.dark select:focus,
+.dark textarea:focus {
+  border-color: var(--nova-primary-dark) !important;
+  background-color: #374151 !important;
+}
+
+/* Dark mode hover states */
+.dark .hover\:bg-gray-50:hover {
+  background-color: #374151 !important;
+}
+
+.dark .hover\:bg-gray-100:hover {
+  background-color: #4b5563 !important;
+}
+
+.dark .hover\:bg-gray-200:hover {
+  background-color: #6b7280 !important;
+}
+
+/* Dark mode gradient adjustments */
+.dark .bg-gradient-to-r {
+  opacity: 0.9;
+}
+
+.dark .from-nova-primary {
+  --tw-gradient-from: var(--nova-primary-dark) !important;
+}
+
+.dark .to-nova-secondary {
+  --tw-gradient-to: var(--nova-secondary-dark) !important;
+}
+
+/* Dark mode backdrop blur */
+.dark .backdrop-blur-sm {
+  backdrop-filter: blur(4px) !important;
+  background-color: rgba(31, 41, 55, 0.8) !important;
+}
+
+.dark .backdrop-blur-xl {
+  backdrop-filter: blur(16px) !important;
+  background-color: rgba(31, 41, 55, 0.8) !important;
+}
+
+/* Dark mode table styles */
+.dark .bg-gray-50 {
+  background-color: #374151 !important;
+}
+
+.dark .divide-gray-100 > :not([hidden]) ~ :not([hidden]) {
+  border-color: #4b5563 !important;
+}
+
+.dark .divide-gray-200 > :not([hidden]) ~ :not([hidden]) {
+  border-color: #4b5563 !important;
+}
+
+/* Dark mode scrollbar */
+.dark .custom-scrollbar::-webkit-scrollbar-track {
+  background: #374151;
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, var(--nova-primary-dark), var(--nova-secondary-dark));
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, var(--nova-secondary-dark), var(--nova-accent-dark));
+}
+
+/* Dark mode status badges */
+.dark .bg-green-100 {
+  background-color: rgba(34, 197, 94, 0.2) !important;
+}
+
+.dark .bg-green-100 .text-green-800 {
+  color: #4ade80 !important;
+}
+
+.dark .bg-yellow-100 {
+  background-color: rgba(250, 204, 21, 0.2) !important;
+}
+
+.dark .bg-yellow-100 .text-yellow-800 {
+  color: #facc15 !important;
+}
+
+.dark .bg-red-100 {
+  background-color: rgba(239, 68, 68, 0.2) !important;
+}
+
+.dark .bg-red-100 .text-red-800 {
+  color: #f87171 !important;
+}
+
+.dark .bg-blue-100 {
+  background-color: rgba(59, 130, 246, 0.2) !important;
+}
+
+.dark .bg-blue-100 .text-blue-800 {
+  color: #60a5fa !important;
+}
+
+/* Dark mode nova brand colors */
+.dark .bg-nova-primary\/10 {
+  background-color: rgba(245, 158, 11, 0.1) !important;
+}
+
+.dark .bg-nova-primary\/20 {
+  background-color: rgba(245, 158, 11, 0.2) !important;
+}
+
+.dark .text-nova-primary {
+  color: var(--nova-primary-dark) !important;
+}
+
+/* Dark mode card enhancements */
+.dark .card-enhanced {
+  background-color: #1f2937 !important;
+  border-color: #374151 !important;
+}
+
+.dark .glass {
+  background: rgba(31, 41, 55, 0.8) !important;
+  border: 1px solid rgba(75, 85, 99, 0.3) !important;
+}
+
+/* Dark mode animations */
+.dark .animate-pulse {
+  opacity: 0.8;
+}
+
+/* Dark mode selection */
+.dark ::selection {
+  background-color: var(--nova-primary-dark) !important;
+  color: #000 !important;
+}
+
+.dark ::-webkit-selection {
+  background-color: var(--nova-primary-dark) !important;
+  color: #000 !important;
+}
+
+/* Dark mode focus states */
+.dark .focus\:ring-nova-primary:focus {
+  --tw-ring-color: var(--nova-primary-dark) !important;
+}
+
+/* Dark mode transitions */
+.dark * {
+  transition-property: background-color, border-color, color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}

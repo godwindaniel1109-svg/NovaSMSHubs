@@ -1,6 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
-import { ArrowRight, Globe, Phone, CheckCircle, AlertCircle, Loader } from 'lucide-react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { 
+  ArrowRight, 
+  AlertCircle, 
+  CheckCircle, 
+  Loader, 
+  Clock, 
+  Phone, 
+  Globe, 
+  CreditCard,
+  RefreshCw,
+  Eye,
+  Copy,
+  ExternalLink
+} from 'lucide-react';
+import { useNotify } from './NotificationSystem';
+import apiService from '../services/apiService';
 
 interface Country {
   code: string;
@@ -8,517 +23,387 @@ interface Country {
   mobileCode: string;
 }
 
-interface NumberAvailability {
-  country: string;
+interface Service {
+  id: string;
+  name: string;
+  price: number;
+  phone: string;
   available: boolean;
+  code: string;
+  country: string;
+}
+
+interface Order {
+  phoneNumber: string;
+  code: string;
+  service: string;
+  timer: string;
+  id: string;
+  date: string;
   price: string;
-  operators: string[];
-  count: number;
+  status: string;
+  ac: string;
 }
 
 const BuyNumberPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const [selectedCountry, setSelectedCountry] = useState(searchParams.get('country') || '');
+  const [selectedService, setSelectedService] = useState('');
+  const [selectedCountry, setSelectedCountry] = useState('187'); // Default to USA
   const [isLoading, setIsLoading] = useState(false);
-  const [isCheckingAvailability, setIsCheckingAvailability] = useState(false);
-  const [availability, setAvailability] = useState<NumberAvailability | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [countries, setCountries] = useState<Country[]>([]);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [orders, setOrders] = useState<any[]>([]);
+  const [services, setServices] = useState<any[]>([]);
+  const [countries, setCountries] = useState<any[]>([]);
+  const [activeTab, setActiveTab] = useState<'services' | 'orders'>('services');
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const notify = useNotify();
 
-  // Countries data - this could be fetched from API later
-  const allCountries: Country[] = [
-    { code: 'US', name: 'United States', mobileCode: '1' },
-    { code: 'UK', name: 'United Kingdom', mobileCode: '44' },
-    { code: 'NG', name: 'Nigeria', mobileCode: '234' },
-    { code: 'AF', name: 'Afghanistan', mobileCode: '93' },
-    { code: 'AL', name: 'Albania', mobileCode: '355' },
-    { code: 'DZ', name: 'Algeria', mobileCode: '213' },
-    { code: 'AS', name: 'American Samoa', mobileCode: '1684' },
-    { code: 'AD', name: 'Andorra', mobileCode: '376' },
-    { code: 'AO', name: 'Angola', mobileCode: '244' },
-    { code: 'AI', name: 'Anguilla', mobileCode: '1264' },
-    { code: 'AQ', name: 'Antarctica', mobileCode: '672' },
-    { code: 'AG', name: 'Antigua and Barbuda', mobileCode: '1268' },
-    { code: 'AR', name: 'Argentina', mobileCode: '54' },
-    { code: 'AM', name: 'Armenia', mobileCode: '374' },
-    { code: 'AW', name: 'Aruba', mobileCode: '297' },
-    { code: 'AU', name: 'Australia', mobileCode: '61' },
-    { code: 'AT', name: 'Austria', mobileCode: '43' },
-    { code: 'AZ', name: 'Azerbaijan', mobileCode: '994' },
-    { code: 'BS', name: 'Bahamas', mobileCode: '1242' },
-    { code: 'BH', name: 'Bahrain', mobileCode: '973' },
-    { code: 'BD', name: 'Bangladesh', mobileCode: '880' },
-    { code: 'BB', name: 'Barbados', mobileCode: '1246' },
-    { code: 'BY', name: 'Belarus', mobileCode: '375' },
-    { code: 'BE', name: 'Belgium', mobileCode: '32' },
-    { code: 'BZ', name: 'Belize', mobileCode: '501' },
-    { code: 'BJ', name: 'Benin', mobileCode: '229' },
-    { code: 'BM', name: 'Bermuda', mobileCode: '1441' },
-    { code: 'BT', name: 'Bhutan', mobileCode: '975' },
-    { code: 'BO', name: 'Bolivia', mobileCode: '591' },
-    { code: 'BA', name: 'Bosnia and Herzegovina', mobileCode: '387' },
-    { code: 'BW', name: 'Botswana', mobileCode: '267' },
-    { code: 'BR', name: 'Brazil', mobileCode: '55' },
-    { code: 'IO', name: 'British Indian Ocean Territory', mobileCode: '246' },
-    { code: 'BN', name: 'Brunei Darussalam', mobileCode: '673' },
-    { code: 'BG', name: 'Bulgaria', mobileCode: '359' },
-    { code: 'BF', name: 'Burkina Faso', mobileCode: '226' },
-    { code: 'BI', name: 'Burundi', mobileCode: '257' },
-    { code: 'KH', name: 'Cambodia', mobileCode: '855' },
-    { code: 'CM', name: 'Cameroon', mobileCode: '237' },
-    { code: 'CA', name: 'Canada', mobileCode: '1' },
-    { code: 'CV', name: 'Cape Verde', mobileCode: '238' },
-    { code: 'KY', name: 'Cayman Islands', mobileCode: '345' },
-    { code: 'CF', name: 'Central African Republic', mobileCode: '236' },
-    { code: 'TD', name: 'Chad', mobileCode: '235' },
-    { code: 'CL', name: 'Chile', mobileCode: '56' },
-    { code: 'CN', name: 'China', mobileCode: '86' },
-    { code: 'CX', name: 'Christmas Island', mobileCode: '61' },
-    { code: 'CC', name: 'Cocos (Keeling) Islands', mobileCode: '61' },
-    { code: 'CO', name: 'Colombia', mobileCode: '57' },
-    { code: 'KM', name: 'Comoros', mobileCode: '269' },
-    { code: 'CG', name: 'Congo', mobileCode: '242' },
-    { code: 'CD', name: 'The Democratic Republic of the Congo', mobileCode: '243' },
-    { code: 'CK', name: 'Cook Islands', mobileCode: '682' },
-    { code: 'CR', name: 'Costa Rica', mobileCode: '506' },
-    { code: 'CI', name: "Cote d'Ivoire", mobileCode: '225' },
-    { code: 'HR', name: 'Croatia', mobileCode: '385' },
-    { code: 'CU', name: 'Cuba', mobileCode: '53' },
-    { code: 'CY', name: 'Cyprus', mobileCode: '357' },
-    { code: 'CZ', name: 'Czech Republic', mobileCode: '420' },
-    { code: 'DK', name: 'Denmark', mobileCode: '45' },
-    { code: 'DJ', name: 'Djibouti', mobileCode: '253' },
-    { code: 'DM', name: 'Dominica', mobileCode: '1767' },
-    { code: 'DO', name: 'Dominican Republic', mobileCode: '1849' },
-    { code: 'EC', name: 'Ecuador', mobileCode: '593' },
-    { code: 'EG', name: 'Egypt', mobileCode: '20' },
-    { code: 'SV', name: 'El Salvador', mobileCode: '503' },
-    { code: 'GQ', name: 'Equatorial Guinea', mobileCode: '240' },
-    { code: 'ER', name: 'Eritrea', mobileCode: '291' },
-    { code: 'EE', name: 'Estonia', mobileCode: '372' },
-    { code: 'ET', name: 'Ethiopia', mobileCode: '251' },
-    { code: 'FK', name: 'Falkland Islands (Malvinas)', mobileCode: '500' },
-    { code: 'FO', name: 'Faroe Islands', mobileCode: '298' },
-    { code: 'FJ', name: 'Fiji', mobileCode: '679' },
-    { code: 'FI', name: 'Finland', mobileCode: '358' },
-    { code: 'FR', name: 'France', mobileCode: '33' },
-    { code: 'GF', name: 'French Guiana', mobileCode: '594' },
-    { code: 'PF', name: 'French Polynesia', mobileCode: '689' },
-    { code: 'GA', name: 'Gabon', mobileCode: '241' },
-    { code: 'GM', name: 'Gambia', mobileCode: '220' },
-    { code: 'GE', name: 'Georgia', mobileCode: '995' },
-    { code: 'DE', name: 'Germany', mobileCode: '49' },
-    { code: 'GH', name: 'Ghana', mobileCode: '233' },
-    { code: 'GI', name: 'Gibraltar', mobileCode: '350' },
-    { code: 'GR', name: 'Greece', mobileCode: '30' },
-    { code: 'GL', name: 'Greenland', mobileCode: '299' },
-    { code: 'GD', name: 'Grenada', mobileCode: '1473' },
-    { code: 'GP', name: 'Guadeloupe', mobileCode: '590' },
-    { code: 'GU', name: 'Guam', mobileCode: '1671' },
-    { code: 'GT', name: 'Guatemala', mobileCode: '502' },
-    { code: 'GG', name: 'Guernsey', mobileCode: '44' },
-    { code: 'GN', name: 'Guinea', mobileCode: '224' },
-    { code: 'GW', name: 'Guinea-Bissau', mobileCode: '245' },
-    { code: 'GY', name: 'Guyana', mobileCode: '595' },
-    { code: 'HT', name: 'Haiti', mobileCode: '509' },
-    { code: 'VA', name: 'Holy See (Vatican City State)', mobileCode: '379' },
-    { code: 'HN', name: 'Honduras', mobileCode: '504' },
-    { code: 'HK', name: 'Hong Kong', mobileCode: '852' },
-    { code: 'HU', name: 'Hungary', mobileCode: '36' },
-    { code: 'IS', name: 'Iceland', mobileCode: '354' },
-    { code: 'IN', name: 'India', mobileCode: '91' },
-    { code: 'ID', name: 'Indonesia', mobileCode: '62' },
-    { code: 'IR', name: 'Iran, Islamic Republic of Persian Gulf', mobileCode: '98' },
-    { code: 'IQ', name: 'Iraq', mobileCode: '964' },
-    { code: 'IE', name: 'Ireland', mobileCode: '353' },
-    { code: 'IM', name: 'Isle of Man', mobileCode: '44' },
-    { code: 'IL', name: 'Israel', mobileCode: '972' },
-    { code: 'IT', name: 'Italy', mobileCode: '39' },
-    { code: 'JM', name: 'Jamaica', mobileCode: '1876' },
-    { code: 'JP', name: 'Japan', mobileCode: '81' },
-    { code: 'JE', name: 'Jersey', mobileCode: '44' },
-    { code: 'JO', name: 'Jordan', mobileCode: '962' },
-    { code: 'KZ', name: 'Kazakhstan', mobileCode: '77' },
-    { code: 'KE', name: 'Kenya', mobileCode: '254' },
-    { code: 'KI', name: 'Kiribati', mobileCode: '686' },
-    { code: 'KP', name: "Democratic People's Republic of Korea", mobileCode: '850' },
-    { code: 'KR', name: 'Republic of South Korea', mobileCode: '82' },
-    { code: 'KW', name: 'Kuwait', mobileCode: '965' },
-    { code: 'KG', name: 'Kyrgyzstan', mobileCode: '996' },
-    { code: 'LA', name: 'Laos', mobileCode: '856' },
-    { code: 'LV', name: 'Latvia', mobileCode: '371' },
-    { code: 'LB', name: 'Lebanon', mobileCode: '961' },
-    { code: 'LS', name: 'Lesotho', mobileCode: '266' },
-    { code: 'LR', name: 'Liberia', mobileCode: '231' },
-    { code: 'LY', name: 'Libyan Arab Jamahiriya', mobileCode: '218' },
-    { code: 'LI', name: 'Liechtenstein', mobileCode: '423' },
-    { code: 'LT', name: 'Lithuania', mobileCode: '370' },
-    { code: 'LU', name: 'Luxembourg', mobileCode: '352' },
-    { code: 'MO', name: 'Macao', mobileCode: '853' },
-    { code: 'MK', name: 'Macedonia', mobileCode: '389' },
-    { code: 'MG', name: 'Madagascar', mobileCode: '261' },
-    { code: 'MW', name: 'Malawi', mobileCode: '265' },
-    { code: 'MY', name: 'Malaysia', mobileCode: '60' },
-    { code: 'MV', name: 'Maldives', mobileCode: '960' },
-    { code: 'ML', name: 'Mali', mobileCode: '223' },
-    { code: 'MT', name: 'Malta', mobileCode: '356' },
-    { code: 'MH', name: 'Marshall Islands', mobileCode: '692' },
-    { code: 'MQ', name: 'Martinique', mobileCode: '596' },
-    { code: 'MR', name: 'Mauritania', mobileCode: '222' },
-    { code: 'MU', name: 'Mauritius', mobileCode: '230' },
-    { code: 'YT', name: 'Mayotte', mobileCode: '262' },
-    { code: 'MX', name: 'Mexico', mobileCode: '52' },
-    { code: 'FM', name: 'Federated States of Micronesia', mobileCode: '691' },
-    { code: 'MD', name: 'Moldova', mobileCode: '373' },
-    { code: 'MC', name: 'Monaco', mobileCode: '377' },
-    { code: 'MN', name: 'Mongolia', mobileCode: '976' },
-    { code: 'ME', name: 'Montenegro', mobileCode: '382' },
-    { code: 'MS', name: 'Montserrat', mobileCode: '1664' },
-    { code: 'MA', name: 'Morocco', mobileCode: '212' },
-    { code: 'MZ', name: 'Mozambique', mobileCode: '258' },
-    { code: 'MM', name: 'Myanmar', mobileCode: '95' },
-    { code: 'NA', name: 'Namibia', mobileCode: '264' },
-    { code: 'NR', name: 'Nauru', mobileCode: '674' },
-    { code: 'NP', name: 'Nepal', mobileCode: '977' },
-    { code: 'NL', name: 'Netherlands', mobileCode: '31' },
-    { code: 'AN', name: 'Netherlands Antilles', mobileCode: '599' },
-    { code: 'NC', name: 'New Caledonia', mobileCode: '687' },
-    { code: 'NZ', name: 'New Zealand', mobileCode: '64' },
-    { code: 'NI', name: 'Nicaragua', mobileCode: '505' },
-    { code: 'NE', name: 'Niger', mobileCode: '227' },
-    { code: 'NU', name: 'Niue', mobileCode: '683' },
-    { code: 'NF', name: 'Norfolk Island', mobileCode: '672' },
-    { code: 'MP', name: 'Northern Mariana Islands', mobileCode: '1670' },
-    { code: 'NO', name: 'Norway', mobileCode: '47' },
-    { code: 'OM', name: 'Oman', mobileCode: '968' },
-    { code: 'PK', name: 'Pakistan', mobileCode: '92' },
-    { code: 'PW', name: 'Palau', mobileCode: '680' },
-    { code: 'PS', name: 'Palestinian Territory', mobileCode: '970' },
-    { code: 'PA', name: 'Panama', mobileCode: '507' },
-    { code: 'PG', name: 'Papua New Guinea', mobileCode: '675' },
-    { code: 'PY', name: 'Paraguay', mobileCode: '595' },
-    { code: 'PE', name: 'Peru', mobileCode: '51' },
-    { code: 'PH', name: 'Philippines', mobileCode: '63' },
-    { code: 'PN', name: 'Pitcairn', mobileCode: '872' },
-    { code: 'PL', name: 'Poland', mobileCode: '48' },
-    { code: 'PT', name: 'Portugal', mobileCode: '351' },
-    { code: 'PR', name: 'Puerto Rico', mobileCode: '1939' },
-    { code: 'QA', name: 'Qatar', mobileCode: '974' },
-    { code: 'RO', name: 'Romania', mobileCode: '40' },
-    { code: 'RU', name: 'Russia', mobileCode: '7' },
-    { code: 'RW', name: 'Rwanda', mobileCode: '250' },
-    { code: 'RE', name: 'Reunion', mobileCode: '262' },
-    { code: 'BL', name: 'Saint Barthelemy', mobileCode: '590' },
-    { code: 'SH', name: 'Saint Helena', mobileCode: '290' },
-    { code: 'KN', name: 'Saint Kitts and Nevis', mobileCode: '1869' },
-    { code: 'LC', name: 'Saint Lucia', mobileCode: '1758' },
-    { code: 'MF', name: 'Saint Martin', mobileCode: '590' },
-    { code: 'PM', name: 'Saint Pierre and Miquelon', mobileCode: '508' },
-    { code: 'VC', name: 'Saint Vincent and the Grenadines', mobileCode: '1784' },
-    { code: 'WS', name: 'Samoa', mobileCode: '685' },
-    { code: 'SM', name: 'San Marino', mobileCode: '378' },
-    { code: 'ST', name: 'Sao Tome and Principe', mobileCode: '239' },
-    { code: 'SA', name: 'Saudi Arabia', mobileCode: '966' },
-    { code: 'SN', name: 'Senegal', mobileCode: '221' },
-    { code: 'RS', name: 'Serbia', mobileCode: '381' },
-    { code: 'SC', name: 'Seychelles', mobileCode: '248' },
-    { code: 'SL', name: 'Sierra Leone', mobileCode: '232' },
-    { code: 'SG', name: 'Singapore', mobileCode: '65' },
-    { code: 'SK', name: 'Slovakia', mobileCode: '421' },
-    { code: 'SI', name: 'Slovenia', mobileCode: '386' },
-    { code: 'SB', name: 'Solomon Islands', mobileCode: '677' },
-    { code: 'SO', name: 'Somalia', mobileCode: '252' },
-    { code: 'ZA', name: 'South Africa', mobileCode: '27' },
-    { code: 'SS', name: 'South Sudan', mobileCode: '211' },
-    { code: 'GS', name: 'South Georgia and the South Sandwich Islands', mobileCode: '500' },
-    { code: 'ES', name: 'Spain', mobileCode: '34' },
-    { code: 'LK', name: 'Sri Lanka', mobileCode: '94' },
-    { code: 'SD', name: 'Sudan', mobileCode: '249' },
-    { code: 'SR', name: 'Suriname', mobileCode: '597' },
-    { code: 'SJ', name: 'Svalbard and Jan Mayen', mobileCode: '47' },
-    { code: 'SZ', name: 'Swaziland', mobileCode: '268' },
-    { code: 'SE', name: 'Sweden', mobileCode: '46' },
-    { code: 'CH', name: 'Switzerland', mobileCode: '41' },
-    { code: 'SY', name: 'Syrian Arab Republic', mobileCode: '963' },
-    { code: 'TW', name: 'Taiwan', mobileCode: '886' },
-    { code: 'TJ', name: 'Tajikistan', mobileCode: '992' },
-    { code: 'TZ', name: 'Tanzania', mobileCode: '255' },
-    { code: 'TH', name: 'Thailand', mobileCode: '66' },
-    { code: 'TL', name: 'Timor-Leste', mobileCode: '670' },
-    { code: 'TG', name: 'Togo', mobileCode: '228' },
-    { code: 'TK', name: 'Tokelau', mobileCode: '690' },
-    { code: 'TO', name: 'Tonga', mobileCode: '676' },
-    { code: 'TT', name: 'Trinidad and Tobago', mobileCode: '1868' },
-    { code: 'TN', name: 'Tunisia', mobileCode: '216' },
-    { code: 'TR', name: 'Turkey', mobileCode: '90' },
-    { code: 'TM', name: 'Turkmenistan', mobileCode: '993' },
-    { code: 'TC', name: 'Turks and Caicos Islands', mobileCode: '1649' },
-    { code: 'TV', name: 'Tuvalu', mobileCode: '688' },
-    { code: 'UG', name: 'Uganda', mobileCode: '256' },
-    { code: 'UA', name: 'Ukraine', mobileCode: '380' },
-    { code: 'AE', name: 'United Arab Emirates', mobileCode: '971' },
-    { code: 'UY', name: 'Uruguay', mobileCode: '598' },
-    { code: 'UZ', name: 'Uzbekistan', mobileCode: '998' },
-    { code: 'VU', name: 'Vanuatu', mobileCode: '678' },
-    { code: 'VE', name: 'Venezuela', mobileCode: '58' },
-    { code: 'VN', name: 'Vietnam', mobileCode: '84' },
-    { code: 'VG', name: 'British Virgin Islands', mobileCode: '1284' },
-    { code: 'VI', name: 'U.S. Virgin Islands', mobileCode: '1340' },
-    { code: 'WF', name: 'Wallis and Futuna', mobileCode: '681' },
-    { code: 'YE', name: 'Yemen', mobileCode: '967' },
-    { code: 'ZM', name: 'Zambia', mobileCode: '260' },
-    { code: 'ZW', name: 'Zimbabwe', mobileCode: '263' }
-  ];
-
+  // Load data from API
   useEffect(() => {
-    setCountries(allCountries);
-    
-    // Auto-check availability if country is pre-selected
-    if (selectedCountry) {
-      checkAvailability(selectedCountry);
-    }
-  }, [selectedCountry]);
+    loadCountries();
+    loadServices();
+    loadOrders();
+  }, []);
 
-  // Mock API function for checking availability
-  // This will be replaced with actual 5Sim API integration later
-  const checkAvailability = async (countryCode: string) => {
-    setIsCheckingAvailability(true);
-    setError(null);
-    setAvailability(null);
-
-    try {
-      // Simulate API call to 5Sim API
-      // In the future, this will be a real API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-
-      // Mock response - replace with actual 5Sim API response
-      const mockResponse: NumberAvailability = {
-        country: countryCode,
-        available: true,
-        price: '₦500',
-        operators: ['WhatsApp', 'Telegram', 'Instagram', 'Facebook', 'Twitter'],
-        count: Math.floor(Math.random() * 100) + 50
-      };
-
-      setAvailability(mockResponse);
-    } catch (err) {
-      setError('Failed to check availability. Please try again.');
-    } finally {
-      setIsCheckingAvailability(false);
+  const loadCountries = async () => {
+    const result = await apiService.getCountries();
+    if (result.success && result.data) {
+      setCountries(result.data);
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedCountry) {
-      setError('Please select a country');
+  const loadServices = async () => {
+    const result = await apiService.getServicesByCountry(selectedCountry);
+    if (result.success && result.data) {
+      setServices(result.data);
+    }
+  };
+
+  const loadOrders = async () => {
+    const result = await apiService.getOrders();
+    if (result.success && result.data) {
+      setOrders(result.data);
+    }
+  };
+
+  const refreshData = async () => {
+    setIsRefreshing(true);
+    await Promise.all([loadServices(), loadOrders()]);
+    setIsRefreshing(false);
+    notify.success('Refreshed', 'Data has been refreshed');
+  };
+
+  const handleServiceSelect = (serviceId: string) => {
+    setSelectedService(serviceId);
+    setError(null);
+  };
+
+  const handlePurchase = async () => {
+    if (!selectedService) {
+      setError('Please select a service');
       return;
     }
+
+    const service = services.find(s => s.id === selectedService);
+    if (!service) return;
 
     setIsLoading(true);
     setError(null);
 
     try {
-      // Check availability first
-      await checkAvailability(selectedCountry);
+      const result = await apiService.createOrder(selectedService, selectedCountry);
       
-      // Navigate to number selection page with country info
-      navigate(`/select-number?country=${selectedCountry}&price=${availability?.price || '₦500'}`);
+      if (result.success) {
+        setSuccess(`Order placed successfully! Your order ID is: ${result.data?.order_id}`);
+        setSelectedService('');
+        setActiveTab('orders');
+        
+        // Refresh orders to show the new order
+        await loadOrders();
+        
+        notify.success('Order Placed', `Your order ${result.data?.order_id} has been created successfully`);
+      } else {
+        setError(result.error || 'Failed to place order. Please try again.');
+        notify.error('Order Failed', result.error || 'Unable to place your order. Please try again.');
+      }
     } catch (err) {
-      setError('Failed to process request. Please try again.');
+      setError('Failed to place order. Please try again.');
+      notify.error('Order Failed', 'Unable to place your order. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleCountryChange = (countryCode: string) => {
-    setSelectedCountry(countryCode);
-    setError(null);
-    setAvailability(null);
-    
-    // Update URL
-    const params = new URLSearchParams();
-    if (countryCode) {
-      params.set('country', countryCode);
-    }
-    navigate(`${window.location.pathname}?${params.toString()}`, { replace: true });
+  const formatCurrency = (amount: number): string => {
+    return `₦${amount.toLocaleString()}`;
+  };
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    notify.success('Copied', 'Text copied to clipboard');
   };
 
   return (
-    <div className="space-y-4">
-      {/* Header */}
-      <div className="bg-white rounded-lg p-6 shadow-sm">
-        <h2 className="font-bold text-xl md:text-2xl text-gray-900">
-          Get a Number
-        </h2>
-      </div>
-
-      {/* Country Selection Form */}
-      <div className="bg-white rounded-lg p-6 shadow-sm">
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label htmlFor="country" className="block mb-2 text-sm font-medium text-gray-900">
-              Select Country
-            </label>
-            <select
-              id="country"
-              value={selectedCountry}
-              onChange={(e) => handleCountryChange(e.target.value)}
-              className="block w-full p-3 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-nova-primary focus:border-nova-primary"
-              required
-            >
-              <option value="">Choose a country</option>
-              {countries.map((country) => (
-                <option key={country.code} value={country.code}>
-                  {country.name} (+{country.mobileCode})
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {error && (
-            <div className="flex items-center space-x-2 p-3 bg-red-50 border border-red-200 rounded-lg">
-              <AlertCircle className="w-5 h-5 text-red-500" />
-              <span className="text-red-700 text-sm">{error}</span>
-            </div>
-          )}
-
-          <button
-            type="submit"
-            disabled={isLoading || !selectedCountry}
-            className="text-white bg-nova-navy hover:bg-nova-secondary font-medium rounded-md text-sm px-8 py-3 text-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
-          >
-            {isLoading ? (
-              <>
-                <Loader className="w-4 h-4 animate-spin" />
-                <span>Processing...</span>
-              </>
-            ) : (
-              <>
-                <span>Continue</span>
-                <ArrowRight className="w-4 h-4" />
-              </>
-            )}
-          </button>
-        </form>
-      </div>
-
-      {/* Availability Results */}
-      {isCheckingAvailability && (
-        <div className="bg-white rounded-lg p-6 shadow-sm">
-          <div className="flex items-center justify-center py-8">
-            <Loader className="w-8 h-8 animate-spin text-nova-primary" />
-            <span className="ml-3 text-gray-600">Checking availability...</span>
-          </div>
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Buy Virtual Numbers</h1>
+          <p className="text-gray-600">Get virtual numbers for SMS verification</p>
         </div>
-      )}
 
-      {availability && !isCheckingAvailability && (
-        <div className="bg-white rounded-lg p-6 shadow-sm">
-          <div className="space-y-4">
-            <div className="flex items-center space-x-3">
-              <CheckCircle className="w-6 h-6 text-green-500" />
-              <h3 className="text-lg font-semibold text-gray-900">
-                Numbers Available for {countries.find(c => c.code === availability.country)?.name}
-              </h3>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="bg-gray-50 rounded-lg p-4">
-                <p className="text-sm text-gray-600 mb-1">Available Numbers</p>
-                <p className="text-2xl font-bold text-gray-900">{availability.count}</p>
-              </div>
-              
-              <div className="bg-gray-50 rounded-lg p-4">
-                <p className="text-sm text-gray-600 mb-1">Starting Price</p>
-                <p className="text-2xl font-bold text-gray-900">{availability.price}</p>
-              </div>
-              
-              <div className="bg-gray-50 rounded-lg p-4">
-                <p className="text-sm text-gray-600 mb-1">Supported Services</p>
-                <p className="text-2xl font-bold text-gray-900">{availability.operators.length}</p>
-              </div>
-            </div>
-
-            <div>
-              <p className="text-sm font-medium text-gray-900 mb-2">Supported Services:</p>
-              <div className="flex flex-wrap gap-2">
-                {availability.operators.map((operator, index) => (
-                  <span 
-                    key={index}
-                    className="px-3 py-1 bg-nova-primary/20 text-nova-navy rounded-full text-sm font-medium"
-                  >
-                    {operator}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            <div className="pt-4 border-t border-gray-200">
+        {/* Tabs */}
+        <div className="mb-8">
+          <div className="border-b border-gray-200">
+            <nav className="-mb-px flex space-x-8">
               <button
-                onClick={() => navigate(`/select-number?country=${availability.country}&price=${availability.price}`)}
-                className="w-full bg-gradient-to-r from-nova-primary to-nova-secondary text-black font-semibold py-3 rounded-lg hover:opacity-90 transition-all transform hover:scale-[1.02] flex items-center justify-center space-x-2"
-              >
-                <span>Select Number</span>
-                <ArrowRight className="w-5 h-5" />
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Popular Countries */}
-      <div className="bg-white rounded-lg p-6 shadow-sm">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Popular Countries</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {['US', 'UK', 'NG', 'CA', 'AU', 'DE', 'FR', 'IN'].map((code) => {
-            const country = countries.find(c => c.code === code);
-            if (!country) return null;
-            
-            return (
-              <button
-                key={code}
-                onClick={() => handleCountryChange(code)}
-                className={`p-3 rounded-lg border transition-colors ${
-                  selectedCountry === code 
-                    ? 'border-nova-primary bg-nova-primary/10 text-nova-navy' 
-                    : 'border-gray-200 hover:border-nova-primary hover:bg-gray-50'
+                onClick={() => setActiveTab('services')}
+                className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'services'
+                    ? 'border-nova-primary text-nova-primary'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
               >
-                <div className="text-sm font-medium">{country.name}</div>
-                <div className="text-xs text-gray-500">+{country.mobileCode}</div>
+                <Phone className="w-5 h-5 inline mr-2" />
+                Available Services
               </button>
-            );
-          })}
+              <button
+                onClick={() => setActiveTab('orders')}
+                className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'orders'
+                    ? 'border-nova-primary text-nova-primary'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                <Clock className="w-5 h-5 inline mr-2" />
+                Order History ({orders.length})
+              </button>
+              <button
+                onClick={refreshData}
+                disabled={isRefreshing}
+                className="py-2 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 flex items-center"
+              >
+                <RefreshCw className={`w-4 h-4 inline mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+                {isRefreshing ? 'Refreshing...' : 'Refresh'}
+              </button>
+            </nav>
+          </div>
         </div>
-      </div>
 
-      {/* Info Section */}
-      <div className="bg-gradient-to-r from-nova-primary/10 to-nova-secondary/10 rounded-lg p-6">
-        <div className="flex items-start space-x-3">
-          <Globe className="w-6 h-6 text-nova-primary mt-1" />
+        {/* Services Tab */}
+        {activeTab === 'services' && (
           <div>
-            <h4 className="font-semibold text-gray-900 mb-2">About Our Numbers</h4>
-            <p className="text-sm text-gray-600 mb-3">
-              We provide high-quality virtual numbers from 500+ countries worldwide. All numbers are non-VoIP and compatible with major services like WhatsApp, Telegram, and more.
-            </p>
-            <div className="space-y-1 text-sm text-gray-600">
-              <div className="flex items-center space-x-2">
-                <CheckCircle className="w-4 h-4 text-green-500" />
-                <span>Instant delivery</span>
+            {/* Country Selector */}
+            <div className="mb-6 bg-white rounded-lg shadow-md border border-gray-200 p-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Select Country</label>
+              <select 
+                value={selectedCountry}
+                onChange={(e) => {
+                  setSelectedCountry(e.target.value);
+                  loadServices(); // Reload services for new country
+                }}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-nova-primary focus:border-transparent"
+              >
+                {countries.map(country => (
+                  <option key={country.id} value={country.id}>
+                    {country.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Services Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {services.map((service: any) => (
+                <div
+                  key={service.id}
+                  className={`bg-white rounded-lg shadow-md border-2 p-6 cursor-pointer transition-all ${
+                    selectedService === service.id
+                      ? 'border-nova-primary shadow-lg'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                  onClick={() => handleServiceSelect(service.id)}
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-12 h-12 bg-nova-primary/10 rounded-lg flex items-center justify-center">
+                        <Phone className="w-6 h-6 text-nova-primary" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-gray-900">{service.name}</h3>
+                        <p className="text-sm text-gray-500">{service.short_name?.toUpperCase()}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-lg font-bold text-gray-900">₦{service.converted_price?.toLocaleString()}</p>
+                      <p className="text-xs text-gray-500">per number</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm text-gray-600">
+                      <p>TTL: {service.ttl} seconds</p>
+                      <p>Category: {service.category}</p>
+                    </div>
+                    <div className="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
+                      Available
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Orders Tab */}
+        {activeTab === 'orders' && (
+          <div className="bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden">
+            {orders.length === 0 ? (
+              <div className="text-center py-12">
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No Order Available</h3>
               </div>
-              <div className="flex items-center space-x-2">
-                <CheckCircle className="w-4 h-4 text-green-500" />
-                <span>100% compatible with all services</span>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50 border-b border-gray-200">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        PHONE NUMBER
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        CODE
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        SERVICE
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        TIMER
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        ID
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        DATE
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        PRICE
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        STATUS
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        AC
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {orders.map((order: any, index) => (
+                      <tr key={index} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          <div className="flex items-center space-x-2">
+                            <span>{order.phone_number}</span>
+                            <button
+                              onClick={() => copyToClipboard(order.phone_number)}
+                              className="text-nova-primary hover:text-nova-secondary"
+                            >
+                              <Copy className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {order.code || 'Pending'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {order.service_name}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {order.expires_at ? new Date(order.expires_at).toLocaleTimeString() : 'N/A'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {order.order_id}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {new Date(order.created_at).toLocaleDateString()}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          ₦{order.amount?.toLocaleString()}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                            order.status === 0 ? 'bg-yellow-100 text-yellow-800' :
+                            order.status === 1 ? 'bg-green-100 text-green-800' :
+                            'bg-red-100 text-red-800'
+                          }`}>
+                            {order.status === 0 ? 'Pending' : order.status === 1 ? 'Complete' : 'Cancelled'}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                          {order.status === 1 ? '✓' : '--'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
-              <div className="flex items-center space-x-2">
-                <CheckCircle className="w-4 h-4 text-green-500" />
-                <span>24/7 customer support</span>
+            )}
+          </div>
+        )}
+
+        {/* Purchase Button */}
+        {activeTab === 'services' && (
+          <div className="mt-8">
+            <div className="bg-white rounded-lg shadow-md border border-gray-200 p-6">
+              {error && (
+                <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center">
+                  <AlertCircle className="w-5 h-5 text-red-600 mr-2" />
+                  <span className="text-red-700">{error}</span>
+                </div>
+              )}
+              
+              {success && (
+                <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center">
+                  <CheckCircle className="w-5 h-5 text-green-600 mr-2" />
+                  <span className="text-green-700">{success}</span>
+                </div>
+              )}
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">Complete Purchase</h3>
+                  <p className="text-gray-600">
+                    {selectedService 
+                      ? `Selected: ${services.find((s: any) => s.id === selectedService)?.name} - ₦${services.find((s: any) => s.id === selectedService)?.converted_price?.toLocaleString() || 0}`
+                      : 'Please select a service to continue'
+                    }
+                  </p>
+                </div>
+                
+                <button
+                  onClick={handlePurchase}
+                  disabled={!selectedService || isLoading}
+                  className={`flex items-center px-6 py-3 rounded-lg font-medium transition-colors ${
+                    !selectedService || isLoading
+                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      : 'bg-nova-primary text-black hover:bg-nova-secondary'
+                  }`}
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader className="w-5 h-5 mr-2 animate-spin" />
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      <CreditCard className="w-5 h-5 mr-2" />
+                      Purchase Number
+                    </>
+                  )}
+                </button>
               </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

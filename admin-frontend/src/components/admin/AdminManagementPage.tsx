@@ -6,7 +6,7 @@ interface AdminUser {
   id: string;
   username: string;
   email: string;
-  role: 'super_admin' | 'admin' | 'validator' | 'moderator' | undefined;
+  role: 'super_admin' | 'admin' | 'validator' | 'moderator';
   permissions: {
     dashboard: boolean;
     users: boolean;
@@ -31,7 +31,16 @@ interface RoleTemplate {
   name: string;
   icon: React.ReactNode;
   description: string;
-  permissions: typeof AdminUser['permissions'];
+  permissions: {
+    dashboard: boolean;
+    users: boolean;
+    transactions: boolean;
+    payments: boolean;
+    numbers: boolean;
+    providers: boolean;
+    reports: boolean;
+    settings: boolean;
+  };
   color: string;
 }
 
@@ -229,13 +238,18 @@ const AdminManagementPage: React.FC = () => {
   };
 
   // Get role badge
-  const getRoleBadge = (role: string) => {
+  const getRoleBadge = (role?: string) => {
+    if (!role) return null;
     const template = roleTemplates.find(t => t.role === role);
     return template ? (
       <span className={`px-2 py-1 text-xs rounded-full ${template.color}`}>
         {template.name}
       </span>
-    ) : null;
+    ) : (
+      <span className="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-800">
+        {role}
+      </span>
+    );
   };
 
   // Get permission icon
@@ -416,7 +430,7 @@ const AdminManagementPage: React.FC = () => {
                           <button
                             onClick={() => {
                               setEditingAdmin(admin);
-                              setSelectedRole(admin.role);
+                              setSelectedRole(admin.role || '');
                               setCustomPermissions(admin.permissions);
                               setShowModal(true);
                             }}

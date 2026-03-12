@@ -28,6 +28,7 @@ const AdminDashboardLayout: React.FC<AdminDashboardLayoutProps> = ({ children })
   const handleLogout = () => {
     localStorage.removeItem('adminToken');
     localStorage.removeItem('adminData');
+    sessionStorage.clear();
     navigate('/admin/login');
   };
 

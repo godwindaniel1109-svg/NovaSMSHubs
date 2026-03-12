@@ -183,7 +183,7 @@ const SMSNumberOrderPage: React.FC = () => {
 
           // Update wallet balance if deducted
           if (response.deducted && response.amount) {
-            setWalletBalance(prev => prev - response.amount);
+            setWalletBalance(prev => prev - (response.amount || 0));
           }
 
           setSuccess(`Code received: ${response.code}`);
@@ -406,9 +406,9 @@ const SMSNumberOrderPage: React.FC = () => {
                       <td className="px-6 py-4 whitespace-nowrap">
                         {order.code ? (
                           <div className="flex items-center">
-                            <span className="text-sm font-mono text-green-600">{order.code}</span>
+                            <span className="text-sm font-mono text-green-600">{order.code || ''}</span>
                             <button
-                              onClick={() => copyToClipboard(order.code)}
+                              onClick={() => copyToClipboard(order.code || '')}
                               className="ml-2 text-gray-400 hover:text-gray-600"
                             >
                               <Copy className="w-4 h-4" />

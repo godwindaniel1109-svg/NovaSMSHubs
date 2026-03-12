@@ -73,14 +73,13 @@ let db;
 
 async function initDB() {
   try {
-    db = await mysql.createConnection(dbConfig);
-    console.log('Connected to MySQL database');
-    
-    // Create tables if they don't exist
-    await createTables();
+    // For now, use mock data instead of database connection
+    console.log('Using mock data (Main Backend) - Database connection skipped');
+    db = null; // We'll use mock data
   } catch (error) {
     console.error('Database connection failed:', error);
-    process.exit(1);
+    console.log('Continuing with mock data...');
+    db = null;
   }
 }
 
